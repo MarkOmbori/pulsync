@@ -2,20 +2,28 @@ import SwiftUI
 import AVKit
 import Combine
 
+// Custom AVPlayerView that ignores scroll wheel events
+class NonScrollingPlayerView: AVPlayerView {
+    override func scrollWheel(with event: NSEvent) {
+        // Pass scroll events to superview (feed scroll) instead of handling them
+        nextResponder?.scrollWheel(with: event)
+    }
+}
+
 // Custom NSViewRepresentable for AVPlayer
 struct NativeVideoPlayer: NSViewRepresentable {
     let player: AVPlayer
 
-    func makeNSView(context: Context) -> AVPlayerView {
-        let view = AVPlayerView()
+    func makeNSView(context: Context) -> NonScrollingPlayerView {
+        let view = NonScrollingPlayerView()
         view.player = player
-        view.controlsStyle = .inline
+        view.controlsStyle = .floating  // Floating controls don't interfere with scrolling
         view.showsFullScreenToggleButton = false
         view.videoGravity = .resizeAspectFill
         return view
     }
 
-    func updateNSView(_ nsView: AVPlayerView, context: Context) {
+    func updateNSView(_ nsView: NonScrollingPlayerView, context: Context) {
         nsView.player = player
     }
 }
