@@ -45,30 +45,95 @@ struct FeedView: View {
                             .foregroundStyle(.secondary)
                     }
                 } else {
-                    // Vertical swipe container
-                    ScrollView(.vertical, showsIndicators: false) {
-                        LazyVStack(spacing: 0) {
-                            ForEach(Array(feedItems.enumerated()), id: \.element.id) { index, item in
-                                ContentCard(item: item)
-                                    .frame(width: geometry.size.width, height: geometry.size.height)
-                                    .onAppear {
-                                        // Record view when card appears
-                                        recordView(for: item)
+                    // Vertical scroll with snap-to-item behavior
+                    ScrollViewReader { proxy in
+                        ScrollView(.vertical, showsIndicators: false) {
+                            LazyVStack(spacing: 0) {
+                                ForEach(Array(feedItems.enumerated()), id: \.element.id) { index, item in
+                                    ContentCard(item: item)
+                                        .frame(width: geometry.size.width, height: geometry.size.height)
+                                        .id(index)
+                                        .onAppear {
+                                            currentIndex = index
+                                            recordView(for: item)
 
-                                        // Load more when near end
-                                        if index >= feedItems.count - 3 && hasMore && !isLoading {
-                                            Task { await loadMoreFeed() }
+                                            // Load more when near end
+                                            if index >= feedItems.count - 3 && hasMore && !isLoading {
+                                                Task { await loadMoreFeed() }
+                                            }
                                         }
-                                    }
+                                }
                             }
                         }
+                        .scrollTargetLayout()
+                        .scrollPosition(id: Binding(
+                            get: { currentIndex },
+                            set: { if let newValue = $0 { currentIndex = newValue } }
+                        ))
+                        .onKeyPress(.downArrow) {
+                            navigateToNext(proxy: proxy)
+                            return .handled
+                        }
+                        .onKeyPress(.upArrow) {
+                            navigateToPrevious(proxy: proxy)
+                            return .handled
+                        }
+                        .onKeyPress(.space) {
+                            navigateToNext(proxy: proxy)
+                            return .handled
+                        }
                     }
-                    .scrollTargetBehavior(.paging)
+
+                    // Navigation hints
+                    VStack {
+                        Spacer()
+                        HStack {
+                            Spacer()
+                            VStack(spacing: 4) {
+                                if currentIndex > 0 {
+                                    Image(systemName: "chevron.up")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                                Text("\(currentIndex + 1)/\(feedItems.count)")
+                                    .font(.caption2)
+                                    .foregroundStyle(.white.opacity(0.5))
+                                if currentIndex < feedItems.count - 1 {
+                                    Image(systemName: "chevron.down")
+                                        .font(.caption)
+                                        .foregroundStyle(.white.opacity(0.5))
+                                }
+                            }
+                            .padding(8)
+                            .background(.black.opacity(0.3))
+                            .clipShape(Capsule())
+                            .padding(.trailing, 8)
+                            .padding(.bottom, 80)
+                        }
+                    }
                 }
             }
         }
         .task {
             await loadFeed()
+        }
+    }
+
+    private func navigateToNext(proxy: ScrollViewProxy) {
+        if currentIndex < feedItems.count - 1 {
+            currentIndex += 1
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo(currentIndex, anchor: .top)
+            }
+        }
+    }
+
+    private func navigateToPrevious(proxy: ScrollViewProxy) {
+        if currentIndex > 0 {
+            currentIndex -= 1
+            withAnimation(.easeInOut(duration: 0.3)) {
+                proxy.scrollTo(currentIndex, anchor: .top)
+            }
         }
     }
 
