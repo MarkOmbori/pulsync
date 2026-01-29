@@ -2,29 +2,59 @@ import SwiftUI
 import AVKit
 import Combine
 
-// Custom AVPlayerView that ignores scroll wheel events
-class NonScrollingPlayerView: AVPlayerView {
+// Container view that forwards all scroll events to the parent scroll view
+class ScrollPassthroughView: NSView {
     override func scrollWheel(with event: NSEvent) {
-        // Pass scroll events to superview (feed scroll) instead of handling them
-        nextResponder?.scrollWheel(with: event)
+        // Find the enclosing NSScrollView and forward the event
+        var responder: NSResponder? = self.superview
+        while responder != nil {
+            if let scrollView = responder as? NSScrollView {
+                scrollView.scrollWheel(with: event)
+                return
+            }
+            responder = responder?.nextResponder
+        }
+        // If no scroll view found, pass to next responder
+        super.scrollWheel(with: event)
     }
 }
 
-// Custom NSViewRepresentable for AVPlayer
+// Custom NSViewRepresentable for AVPlayer that doesn't capture scroll
 struct NativeVideoPlayer: NSViewRepresentable {
     let player: AVPlayer
 
-    func makeNSView(context: Context) -> NonScrollingPlayerView {
-        let view = NonScrollingPlayerView()
-        view.player = player
-        view.controlsStyle = .floating  // Floating controls don't interfere with scrolling
-        view.showsFullScreenToggleButton = false
-        view.videoGravity = .resizeAspectFill
-        return view
+    func makeNSView(context: Context) -> NSView {
+        // Container that passes scroll events through
+        let container = ScrollPassthroughView()
+
+        // Create player layer instead of AVPlayerView to avoid scroll capture
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.videoGravity = .resizeAspectFill
+
+        // Host the layer in an NSView
+        let layerHost = NSView()
+        layerHost.wantsLayer = true
+        layerHost.layer = playerLayer
+
+        layerHost.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(layerHost)
+
+        NSLayoutConstraint.activate([
+            layerHost.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            layerHost.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+            layerHost.topAnchor.constraint(equalTo: container.topAnchor),
+            layerHost.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+        ])
+
+        return container
     }
 
-    func updateNSView(_ nsView: NonScrollingPlayerView, context: Context) {
-        nsView.player = player
+    func updateNSView(_ nsView: NSView, context: Context) {
+        // Update player if needed
+        if let layerHost = nsView.subviews.first,
+           let playerLayer = layerHost.layer as? AVPlayerLayer {
+            playerLayer.player = player
+        }
     }
 }
 
@@ -51,6 +81,14 @@ struct VideoContentView: View {
                 case .ready:
                     if let player = viewModel.player {
                         NativeVideoPlayer(player: player)
+                            .onTapGesture {
+                                // Toggle play/pause on tap
+                                if player.timeControlStatus == .playing {
+                                    player.pause()
+                                } else {
+                                    player.play()
+                                }
+                            }
                             .onAppear {
                                 player.play()
                             }
