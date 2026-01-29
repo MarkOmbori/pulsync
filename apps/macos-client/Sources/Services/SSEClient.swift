@@ -1,7 +1,7 @@
 import Foundation
 
 /// A client for handling Server-Sent Events (SSE) streams
-class SSEClient: NSObject, URLSessionDataDelegate {
+class SSEClient: NSObject, URLSessionDataDelegate, @unchecked Sendable {
     private var task: URLSessionDataTask?
     private var session: URLSession?
     private var buffer = ""

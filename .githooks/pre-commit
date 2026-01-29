@@ -1,0 +1,14 @@
+#!/bin/bash
+set -e
+
+echo "Running Python checks..."
+cd services/api
+uv run ruff check app/ --fix
+uv run ruff format app/
+uv run pytest -q
+
+echo "Running Swift checks..."
+cd ../../apps/macos-client
+swift build
+
+echo "All checks passed!"

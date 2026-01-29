@@ -25,7 +25,7 @@ struct User: Codable, Identifiable {
     }
 }
 
-struct UserPublic: Codable, Identifiable {
+struct UserPublic: Codable, Identifiable, Hashable {
     let id: UUID
     let displayName: String
     let avatarUrl: String?

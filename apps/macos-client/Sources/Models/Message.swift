@@ -1,6 +1,6 @@
 import Foundation
 
-struct Message: Codable, Identifiable {
+struct Message: Codable, Identifiable, Hashable {
     let id: UUID
     let conversationId: UUID
     let senderId: UUID
@@ -22,7 +22,7 @@ struct MessageCreate: Encodable {
     let body: String
 }
 
-struct ConversationParticipant: Codable, Identifiable {
+struct ConversationParticipant: Codable, Identifiable, Hashable {
     let id: UUID
     let conversationId: UUID
     let userId: UUID
@@ -39,7 +39,7 @@ struct ConversationParticipant: Codable, Identifiable {
     }
 }
 
-struct Conversation: Codable, Identifiable {
+struct Conversation: Codable, Identifiable, Hashable {
     let id: UUID
     let createdAt: Date
     let updatedAt: Date

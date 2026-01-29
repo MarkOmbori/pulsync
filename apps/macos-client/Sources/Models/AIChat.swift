@@ -22,7 +22,7 @@ struct AIChatMessage: Codable, Identifiable {
     }
 }
 
-struct AIChatSession: Codable, Identifiable {
+struct AIChatSession: Codable, Identifiable, Hashable {
     let id: UUID
     let title: String?
     let createdAt: Date
