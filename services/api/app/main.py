@@ -21,6 +21,7 @@ from app.routers import (
     tags,
 )
 from app.schemas.item import Item as ItemSchema
+from app.seed_demo_content import seed_demo_content
 
 
 def seed_database(db: Session):
@@ -77,6 +78,9 @@ def seed_database(db: Session):
         db.add(admin_user)
         db.commit()
         print("Database seeded with admin user")
+
+    # Seed demo video content (20 videos with royalty-free Pexels videos)
+    seed_demo_content(db)
 
 
 @asynccontextmanager
