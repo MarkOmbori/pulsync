@@ -38,7 +38,7 @@ struct MainView: View {
     private var socialMediaLayout: some View {
         ZStack {
             // Full screen dark background
-            Color.black
+            PulsyncTheme.background
                 .ignoresSafeArea()
 
             // Main content area
@@ -77,37 +77,33 @@ struct MainView: View {
                 tabButton(for: tab)
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.top, 8)
-        .padding(.bottom, 4)
+        .padding(.horizontal, PulsyncSpacing.sm)
+        .padding(.top, PulsyncSpacing.sm)
+        .padding(.bottom, PulsyncSpacing.xs)
         .background(
             // Gradient fade from content
-            LinearGradient(
-                colors: [.clear, .black.opacity(0.8), .black],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .frame(height: 100)
-            .offset(y: -40)
-            .allowsHitTesting(false),
+            LinearGradient.navigationFade
+                .frame(height: 100)
+                .offset(y: -40)
+                .allowsHitTesting(false),
             alignment: .top
         )
-        .background(Color.black)
+        .background(PulsyncTheme.background)
     }
 
     private func tabButton(for tab: BottomTab) -> some View {
         Button(action: { selectedTab = tab }) {
-            VStack(spacing: 4) {
+            VStack(spacing: PulsyncSpacing.xs) {
                 Image(systemName: iconFor(tab))
-                    .font(.system(size: 22))
+                    .font(.system(size: PulsyncSize.Icon.lg))
                     .fontWeight(selectedTab == tab ? .semibold : .regular)
 
                 Text(tab.rawValue)
-                    .font(.system(size: 10, weight: .medium))
+                    .font(.pulsyncMicro)
             }
-            .foregroundStyle(selectedTab == tab ? .white : .gray)
+            .foregroundStyle(selectedTab == tab ? PulsyncTheme.textPrimary : PulsyncTheme.textMuted)
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .padding(.vertical, PulsyncSpacing.sm)
         }
         .buttonStyle(.plain)
     }
@@ -142,19 +138,19 @@ struct DiscoverView: View {
     var body: some View {
         VStack(spacing: 0) {
             // Search bar
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.gray)
-                TextField("Search", text: $searchText)
+            HStack(spacing: PulsyncSpacing.sm) {
+                Image(systemName: PulsyncIcons.search)
+                    .foregroundStyle(PulsyncTheme.textMuted)
+                TextField("Search Pulsync", text: $searchText)
                     .textFieldStyle(.plain)
-                    .foregroundStyle(.white)
+                    .foregroundStyle(PulsyncTheme.textPrimary)
             }
-            .padding(12)
-            .background(Color.white.opacity(0.1))
-            .clipShape(RoundedRectangle(cornerRadius: 8))
-            .padding()
+            .padding(PulsyncSpacing.ms)
+            .background(PulsyncTheme.surface)
+            .clipShape(Capsule())
+            .padding(PulsyncSpacing.md)
 
-            // Trending content grid would go here
+            // Trending content grid
             ScrollView {
                 LazyVGrid(columns: [
                     GridItem(.flexible()),
@@ -163,13 +159,13 @@ struct DiscoverView: View {
                 ], spacing: 2) {
                     ForEach(0..<12, id: \.self) { _ in
                         Rectangle()
-                            .fill(Color.gray.opacity(0.3))
+                            .fill(PulsyncTheme.surface)
                             .aspectRatio(9/16, contentMode: .fill)
                     }
                 }
             }
         }
-        .background(Color.black)
+        .background(PulsyncTheme.background)
     }
 }
 
@@ -177,15 +173,16 @@ struct DiscoverView: View {
 
 struct LoadingView: View {
     var body: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: PulsyncSpacing.md) {
             ProgressView()
                 .scaleEffect(1.5)
-                .tint(.white)
+                .tint(PulsyncTheme.primary)
             Text("Loading...")
-                .foregroundStyle(.gray)
+                .font(.pulsyncBody)
+                .foregroundStyle(PulsyncTheme.textMuted)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+        .background(PulsyncTheme.background)
     }
 }
 
@@ -195,30 +192,31 @@ struct APIOfflineView: View {
     let onRetry: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "wifi.exclamationmark")
-                .font(.system(size: 64))
-                .foregroundStyle(.orange)
+        VStack(spacing: PulsyncSpacing.lg) {
+            Image(systemName: PulsyncIcons.error)
+                .font(.system(size: PulsyncSize.Icon.huge))
+                .foregroundStyle(PulsyncTheme.warning)
 
             Text("Connection Error")
-                .font(.title2.bold())
-                .foregroundStyle(.white)
+                .font(.pulsyncTitle1)
+                .foregroundStyle(PulsyncTheme.textPrimary)
 
             Text("Unable to connect to server")
-                .foregroundStyle(.gray)
+                .font(.pulsyncBody)
+                .foregroundStyle(PulsyncTheme.textMuted)
 
             Button(action: onRetry) {
                 Text("Retry")
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(.pulsyncLabel)
                     .foregroundStyle(.white)
-                    .padding(.horizontal, 40)
-                    .padding(.vertical, 12)
-                    .background(Color.electricViolet)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
+                    .padding(.horizontal, PulsyncSpacing.xxl)
+                    .padding(.vertical, PulsyncSpacing.ms)
+                    .background(PulsyncTheme.primary)
+                    .clipShape(Capsule())
             }
             .buttonStyle(.plain)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.black)
+        .background(PulsyncTheme.background)
     }
 }

@@ -1,19 +1,9 @@
 import SwiftUI
 
+// MARK: - Color Hex Initializer
+
 extension Color {
-    // Brand colors
-    static let electricViolet = Color(hex: "5F06E4")
-    static let pulsyncDark = Color(hex: "0F111A")
-    static let pulsyncLight = Color.white
-
-    // TikTok-style colors
-    static let tikTokRed = Color(hex: "FE2C55")
-    static let tikTokPink = Color(hex: "FF6B9D")
-
-    // Action button colors
-    static let actionButtonBackground = Color.white.opacity(0.15)
-    static let actionButtonActive = Color.white.opacity(0.25)
-
+    /// Initialize color from hex string (e.g., "6366F1" or "#6366F1")
     init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
@@ -27,7 +17,7 @@ extension Color {
         case 8: // ARGB (32-bit)
             (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
         default:
-            (a, r, g, b) = (1, 1, 1, 0)
+            (a, r, g, b) = (255, 128, 128, 128)
         }
         self.init(
             .sRGB,
@@ -39,16 +29,54 @@ extension Color {
     }
 }
 
-struct PulsyncTheme {
-    static let primary = Color.electricViolet
-    static let background = Color.pulsyncDark
-    static let surface = Color(hex: "1A1D2E")
-    static let textPrimary = Color.white
-    static let textSecondary = Color.gray
+// MARK: - Legacy Color Names (for backwards compatibility)
 
-    // TikTok-style additions
-    static let likeRed = Color.tikTokRed
-    static let followBlue = Color(hex: "69C9D0")
+extension Color {
+    // Brand colors - now mapped to new design system
+    static let electricViolet = Color(hex: "6366F1")  // Primary brand color
+    static let pulsyncDark = Color(hex: "0A0A0B")     // Background dark
+    static let pulsyncLight = Color.white
+
+    // Action colors - mapped to semantic colors
+    static let tikTokRed = Color(hex: "EF4444")       // Like color
+    static let tikTokPink = Color(hex: "FF6B9D")
+
+    // Action button colors
+    static let actionButtonBackground = Color.white.opacity(0.15)
+    static let actionButtonActive = Color.white.opacity(0.25)
+}
+
+// MARK: - PulsyncTheme (Legacy Bridge to New Design System)
+
+/// Main theme configuration.
+/// Uses the new design system tokens under the hood.
+struct PulsyncTheme {
+    // Brand
+    static let primary = Color(hex: "6366F1")
+    static let primaryLight = Color(hex: "818CF8")
+    static let primaryDark = Color(hex: "4F46E5")
+    static let secondary = Color(hex: "14B8A6")
+
+    // Surfaces
+    static let background = Color(hex: "0A0A0B")
+    static let surface = Color(hex: "141416")
+    static let surfaceElevated = Color(hex: "1C1C1E")
+
+    // Text
+    static let textPrimary = Color.white
+    static let textSecondary = Color(hex: "9CA3AF")
+    static let textMuted = Color(hex: "6B7280")
+
+    // Semantic Actions
+    static let likeRed = Color(hex: "EF4444")
+    static let followBlue = Color(hex: "3B82F6")
+    static let success = Color(hex: "22C55E")
+    static let warning = Color(hex: "F59E0B")
+    static let error = Color(hex: "EF4444")
+
+    // Borders
+    static let border = Color.white.opacity(0.1)
+    static let borderStrong = Color.white.opacity(0.2)
 }
 
 // MARK: - Gradients

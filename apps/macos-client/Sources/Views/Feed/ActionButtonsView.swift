@@ -22,13 +22,13 @@ struct ActionButtonsView: View {
         VStack(spacing: sizeCategory.buttonSpacing) {
             // Like button with animated heart
             FloatingActionButton(
-                icon: isLiked ? "heart.fill" : "heart",
+                icon: isLiked ? PulsyncIcons.likeFilled : PulsyncIcons.like,
                 count: likeCount,
                 isActive: isLiked,
-                activeColor: .tikTokRed,
+                activeColor: PulsyncTheme.likeRed,
                 category: sizeCategory,
                 action: {
-                    withAnimation(PulsyncAnimation.bouncy) {
+                    withAnimation(DesignSystem.Animation.bouncy) {
                         isLiked.toggle()
                     }
                     onLike()
@@ -37,23 +37,23 @@ struct ActionButtonsView: View {
 
             // Comment button
             FloatingActionButton(
-                icon: "bubble.right.fill",
+                icon: PulsyncIcons.commentFilled,
                 count: commentCount,
                 isActive: false,
-                activeColor: .white,
+                activeColor: PulsyncTheme.textPrimary,
                 category: sizeCategory,
                 action: onComment
             )
 
             // Bookmark button
             FloatingActionButton(
-                icon: isBookmarked ? "bookmark.fill" : "bookmark",
+                icon: isBookmarked ? PulsyncIcons.bookmarkFilled : PulsyncIcons.bookmark,
                 count: nil,
                 isActive: isBookmarked,
-                activeColor: .yellow,
+                activeColor: PulsyncTheme.warning,
                 category: sizeCategory,
                 action: {
-                    withAnimation(PulsyncAnimation.bouncy) {
+                    withAnimation(DesignSystem.Animation.bouncy) {
                         isBookmarked.toggle()
                     }
                     onBookmark()
@@ -62,10 +62,10 @@ struct ActionButtonsView: View {
 
             // Share button
             FloatingActionButton(
-                icon: "arrowshape.turn.up.right.fill",
+                icon: PulsyncIcons.share,
                 count: nil,
                 isActive: false,
-                activeColor: .white,
+                activeColor: PulsyncTheme.textPrimary,
                 category: sizeCategory,
                 action: onShare
             )
@@ -130,7 +130,7 @@ struct FloatingActionButton: View {
         }
         .buttonStyle(.plain)
         .scaleEffect(isPressed ? 0.85 : 1.0)
-        .animation(PulsyncAnimation.bouncy, value: isPressed)
+        .animation(DesignSystem.Animation.bouncy, value: isPressed)
         .onLongPressGesture(minimumDuration: .infinity, pressing: { pressing in
             isPressed = pressing
         }, perform: {})

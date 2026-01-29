@@ -34,7 +34,7 @@ struct ContentCard: View {
             // Layer 3: Bottom gradient overlay
             VStack {
                 Spacer()
-                LinearGradient.bottomFade
+                LinearGradient.contentFade
                     .frame(height: gradientHeight)
             }
             .ignoresSafeArea()
@@ -122,7 +122,7 @@ struct ContentCard: View {
 
         // Like if not already liked
         if !isLiked {
-            withAnimation(PulsyncAnimation.bouncy) {
+            withAnimation(DesignSystem.Animation.bouncy) {
                 isLiked = true
                 likeCount += 1
             }

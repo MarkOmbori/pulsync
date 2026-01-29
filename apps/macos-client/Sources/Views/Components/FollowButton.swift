@@ -9,46 +9,42 @@ struct FollowButton: View {
 
     var body: some View {
         Button(action: toggleFollow) {
-            HStack(spacing: 4) {
-                if isFollowing {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .bold))
-                } else {
-                    Image(systemName: "plus")
-                        .font(.system(size: 10, weight: .bold))
-                }
+            HStack(spacing: PulsyncSpacing.xs) {
+                Image(systemName: isFollowing ? PulsyncIcons.checkmark : "plus")
+                    .font(.system(size: PulsyncTypography.Size.micro, weight: .bold))
 
                 Text(isFollowing ? "Following" : "Follow")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.pulsyncCaption)
+                    .fontWeight(.semibold)
             }
-            .foregroundStyle(isFollowing ? .white : PulsyncTheme.background)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .foregroundStyle(isFollowing ? PulsyncTheme.textPrimary : PulsyncTheme.background)
+            .padding(.horizontal, PulsyncSpacing.ms)
+            .padding(.vertical, PulsyncSpacing.xs + 2)
             .background(
                 Capsule()
-                    .fill(isFollowing ? Color.clear : Color.white)
+                    .fill(isFollowing ? Color.clear : PulsyncTheme.textPrimary)
                     .overlay(
                         Capsule()
-                            .stroke(Color.white, lineWidth: isFollowing ? 1 : 0)
+                            .stroke(PulsyncTheme.textPrimary, lineWidth: isFollowing ? 1 : 0)
                     )
             )
         }
         .buttonStyle(.plain)
         .scaleEffect(isAnimating ? 0.9 : 1.0)
-        .animation(PulsyncAnimation.bouncy, value: isAnimating)
+        .animation(DesignSystem.Animation.bouncy, value: isAnimating)
     }
 
     private func toggleFollow() {
         isAnimating = true
 
-        withAnimation(PulsyncAnimation.smooth) {
+        withAnimation(DesignSystem.Animation.smooth) {
             isFollowing.toggle()
         }
 
         onToggle()
 
         // Reset animation state
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.fast) {
             isAnimating = false
         }
     }
@@ -67,29 +63,29 @@ struct CompactFollowButton: View {
         Button(action: toggleFollow) {
             ZStack {
                 Circle()
-                    .fill(isFollowing ? Color.gray.opacity(0.5) : Color.tikTokRed)
+                    .fill(isFollowing ? PulsyncTheme.textMuted : PulsyncTheme.followBlue)
                     .frame(width: size, height: size)
 
-                Image(systemName: isFollowing ? "checkmark" : "plus")
+                Image(systemName: isFollowing ? PulsyncIcons.checkmark : "plus")
                     .font(.system(size: size * 0.5, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(PulsyncTheme.textPrimary)
             }
         }
         .buttonStyle(.plain)
         .scaleEffect(isAnimating ? 0.8 : 1.0)
-        .animation(PulsyncAnimation.bouncy, value: isAnimating)
+        .animation(DesignSystem.Animation.bouncy, value: isAnimating)
     }
 
     private func toggleFollow() {
         isAnimating = true
 
-        withAnimation(PulsyncAnimation.smooth) {
+        withAnimation(DesignSystem.Animation.smooth) {
             isFollowing.toggle()
         }
 
         onToggle()
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + DesignSystem.Animation.fast) {
             isAnimating = false
         }
     }
@@ -138,11 +134,11 @@ struct AvatarWithFollowBadge: View {
 
     private var defaultAvatar: some View {
         Circle()
-            .fill(Color.electricViolet)
+            .fill(PulsyncTheme.primary)
             .overlay {
                 Text(String(displayName.prefix(1)).uppercased())
                     .font(.system(size: avatarSize * 0.4, weight: .bold))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(PulsyncTheme.textPrimary)
             }
     }
 }
@@ -165,5 +161,5 @@ struct AvatarWithFollowBadge: View {
         )
     }
     .padding()
-    .background(Color.black)
+    .background(PulsyncTheme.background)
 }
