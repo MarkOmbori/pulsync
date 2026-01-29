@@ -1,0 +1,51 @@
+# Authentication Flow Test Scenario
+name: auth_flow
+description: Test complete authentication user journey
+priority: critical
+
+preconditions:
+  - Backend API is running at http://localhost:8000
+  - Database is connected
+
+steps:
+  - name: Login creates new user
+    action: POST /auth/login
+    body:
+      token: "e2e-test@pulsync.io"
+    expected:
+      status: 200
+      body_contains:
+        - access_token
+        - user
+
+  - name: Get current user
+    action: GET /auth/me
+    auth: true
+    expected:
+      status: 200
+      body_contains:
+        - email
+        - display_name
+
+  - name: Invalid token rejected
+    action: GET /auth/me
+    headers:
+      Authorization: "Bearer invalid-token"
+    expected:
+      status: 401
+
+  - name: Register new user
+    action: POST /auth/register
+    body:
+      email: "registered@pulsync.io"
+      display_name: "Registered User"
+      role: "engineering"
+      department: "Engineering"
+    expected:
+      status: 200
+      body_contains:
+        - access_token
+
+postconditions:
+  - All tests pass
+  - No 5xx errors in logs

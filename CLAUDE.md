@@ -54,6 +54,9 @@ Available in `.claude/agents/`:
 - `/reviewer` - Code review across all repos
 - `/debugger` - Issue investigation
 - `/tester` - Test-driven development
+- `/qa-orchestrator` - Coordinates E2E testing cycles, analyzes results, hands off issues
+- `/qa-runner` - Executes E2E test scenarios
+- `/qa-monitor` - Monitors backend health during tests
 
 ## Development Workflow
 
@@ -83,3 +86,42 @@ git push
 - Swagger: http://localhost:8000/docs
 - Health: http://localhost:8000/health
 - Items: http://localhost:8000/items (from database)
+
+## QA Testing
+
+### Running E2E Tests
+```bash
+# Run all E2E tests
+cd services/api && uv run pytest tests/e2e/ -v
+
+# Run specific test suite
+cd services/api && uv run pytest tests/e2e/test_user_journey_auth.py -v
+cd services/api && uv run pytest tests/e2e/test_user_journey_feed.py -v
+cd services/api && uv run pytest tests/e2e/test_user_journey_messaging.py -v
+cd services/api && uv run pytest tests/e2e/test_user_journey_ai_chat.py -v
+```
+
+### QA Health Endpoints
+```bash
+# Basic health
+curl http://localhost:8000/health
+
+# Detailed health with metrics
+curl http://localhost:8000/qa/health-detailed
+
+# Recent logs (filterable)
+curl "http://localhost:8000/qa/logs?limit=50"
+curl "http://localhost:8000/qa/logs?level=error"
+```
+
+### QA Infrastructure
+- `qa/scenarios/` - YAML test scenario definitions
+- `qa/issues/` - Issue reports from failed tests
+- `qa/reports/` - Test run reports
+
+### QA Workflow
+1. **Pre-flight**: Check backend health via `/qa/health-detailed`
+2. **Run tests**: Execute E2E tests via pytest
+3. **Analyze**: Review failures and logs
+4. **Handoff**: Create issue report, hand off to debugger/coder agents
+5. **Verify**: Re-run failed tests after fixes (max 3 retries)

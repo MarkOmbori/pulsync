@@ -1,0 +1,49 @@
+# Feed Browsing Test Scenario
+name: feed_browse
+description: Test feed browsing and content discovery
+priority: critical
+
+preconditions:
+  - Backend API is running
+  - User is authenticated
+  - Database has content seeded
+
+steps:
+  - name: Get main feed
+    action: GET /feed
+    auth: true
+    expected:
+      status: 200
+      body_contains:
+        - items
+        - has_more
+
+  - name: Get feed with pagination
+    action: GET /feed?limit=5
+    auth: true
+    expected:
+      status: 200
+      body_validates:
+        items_count: "<=5"
+
+  - name: Get For You feed
+    action: GET /feed/for-you
+    auth: true
+    expected:
+      status: 200
+
+  - name: Get Following feed
+    action: GET /feed/following
+    auth: true
+    expected:
+      status: 200
+
+  - name: Get Discover feed
+    action: GET /feed/discover
+    auth: true
+    expected:
+      status: 200
+
+postconditions:
+  - Response times < 2s
+  - No 5xx errors

@@ -1,0 +1,55 @@
+# AI Chat Flow Test Scenario
+name: ai_chat_flow
+description: Test AI chat session creation and messaging
+priority: high
+
+preconditions:
+  - Backend API is running
+  - User is authenticated
+  - AI service is available (or mocked)
+
+steps:
+  - name: Create AI chat session
+    action: POST /ai-chat/sessions
+    auth: true
+    body:
+      title: "E2E Test Session"
+    expected:
+      status: 201
+      body_contains:
+        - id
+        - title
+
+  - name: Send message to AI
+    action: POST /ai-chat/sessions/{{session_id}}/messages
+    auth: true
+    body:
+      content: "What is Pulsync?"
+    expected:
+      status: 200
+      content_type: "text/event-stream"
+
+  - name: Get session with history
+    action: GET /ai-chat/sessions/{{session_id}}
+    auth: true
+    expected:
+      status: 200
+      body_contains:
+        - messages
+
+  - name: List sessions
+    action: GET /ai-chat/sessions
+    auth: true
+    expected:
+      status: 200
+      body_is_array: true
+
+  - name: Delete session
+    action: DELETE /ai-chat/sessions/{{session_id}}
+    auth: true
+    expected:
+      status: 204
+
+postconditions:
+  - Session is deleted
+  - No orphaned messages

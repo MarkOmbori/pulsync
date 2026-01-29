@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
 from app.db import Base, engine, get_db
+from app.middleware.observability import ObservabilityMiddleware
 from app.models.item import Item as ItemModel
 from app.models.tag import Tag as TagModel
 from app.models.user import User as UserModel
@@ -18,6 +19,7 @@ from app.routers import (
     interactions,
     media,
     messages,
+    qa,
     tags,
 )
 from app.schemas.item import Item as ItemSchema
@@ -108,6 +110,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(ObservabilityMiddleware)
 
 # Register routers
 app.include_router(auth.router)
@@ -120,6 +123,7 @@ app.include_router(comments.router)
 app.include_router(admin.router)
 app.include_router(messages.router)
 app.include_router(ai_chat.router)
+app.include_router(qa.router)
 
 
 @app.get("/")

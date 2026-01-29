@@ -24,3 +24,8 @@ dev = [
     "ruff>=0.4.0",
     "pre-commit>=4.5.1",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"

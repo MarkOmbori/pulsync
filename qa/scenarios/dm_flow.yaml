@@ -1,0 +1,54 @@
+# Direct Messaging Flow Test Scenario
+name: dm_flow
+description: Test direct messaging between users
+priority: high
+
+preconditions:
+  - Backend API is running
+  - At least 2 users exist
+  - User is authenticated
+
+steps:
+  - name: Search for users
+    action: GET /messages/users/search?q=test
+    auth: true
+    expected:
+      status: 200
+      body_is_array: true
+
+  - name: Create conversation
+    action: POST /messages/conversations
+    auth: true
+    body:
+      participant_ids: ["{{other_user_id}}"]
+      initial_message: "Hello from E2E test!"
+    expected:
+      status: 201
+      body_contains:
+        - id
+        - participants
+
+  - name: Send message
+    action: POST /messages/conversations/{{conversation_id}}/messages
+    auth: true
+    body:
+      body: "Follow-up message"
+    expected:
+      status: 201
+
+  - name: Get messages
+    action: GET /messages/conversations/{{conversation_id}}/messages
+    auth: true
+    expected:
+      status: 200
+      body_is_array: true
+
+  - name: List conversations
+    action: GET /messages/conversations
+    auth: true
+    expected:
+      status: 200
+
+postconditions:
+  - Messages are persisted
+  - Other user can see conversation
