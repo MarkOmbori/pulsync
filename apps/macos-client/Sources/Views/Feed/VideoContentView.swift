@@ -1,73 +1,64 @@
 import SwiftUI
 import AVKit
+import Combine
 
-// Custom NSViewRepresentable for AVPlayer to avoid VideoPlayer crash
+// Custom NSViewRepresentable for AVPlayer
 struct NativeVideoPlayer: NSViewRepresentable {
     let player: AVPlayer
 
-    func makeNSView(context: Context) -> NSView {
+    func makeNSView(context: Context) -> AVPlayerView {
         let view = AVPlayerView()
         view.player = player
         view.controlsStyle = .inline
         view.showsFullScreenToggleButton = false
+        view.videoGravity = .resizeAspectFill
         return view
     }
 
-    func updateNSView(_ nsView: NSView, context: Context) {
-        if let playerView = nsView as? AVPlayerView {
-            playerView.player = player
-        }
+    func updateNSView(_ nsView: AVPlayerView, context: Context) {
+        nsView.player = player
     }
 }
 
 struct VideoContentView: View {
     let item: ContentFeedItem
 
-    @State private var player: AVPlayer?
-    @State private var isLoading = true
-    @State private var hasError = false
+    @StateObject private var viewModel = VideoPlayerViewModel()
 
     var body: some View {
         ZStack {
             PulsyncTheme.background
 
-            if let mediaUrl = item.mediaUrl, let url = URL(string: mediaUrl) {
-                if let player = player {
-                    NativeVideoPlayer(player: player)
+            if let mediaUrl = item.mediaUrl {
+                switch viewModel.state {
+                case .idle:
+                    Color.black
                         .onAppear {
-                            player.play()
-                        }
-                        .onDisappear {
-                            player.pause()
-                        }
-                } else if isLoading {
-                    // Loading state with thumbnail
-                    ZStack {
-                        if let thumbnailUrl = item.thumbnailUrl, let url = URL(string: thumbnailUrl) {
-                            AsyncImage(url: url) { image in
-                                image
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                            } placeholder: {
-                                Color.black
-                            }
+                            viewModel.load(urlString: mediaUrl)
                         }
 
-                        ProgressView()
-                            .scaleEffect(1.5)
-                            .tint(.white)
+                case .loading:
+                    loadingView
+
+                case .ready:
+                    if let player = viewModel.player {
+                        NativeVideoPlayer(player: player)
+                            .onAppear {
+                                player.play()
+                            }
+                            .onDisappear {
+                                player.pause()
+                            }
                     }
-                    .task {
-                        await loadVideo(from: url)
-                    }
-                } else if hasError {
-                    errorView
+
+                case .failed(let error):
+                    errorView(message: error)
                 }
             } else {
-                placeholderView
+                noMediaView
             }
 
-            // Gradient overlay at bottom for text readability
+            // Gradient overlay at bottom
             VStack {
                 Spacer()
                 LinearGradient(
@@ -80,100 +71,152 @@ struct VideoContentView: View {
         }
     }
 
-    private var placeholderView: some View {
-        VStack(spacing: 16) {
+    private var loadingView: some View {
+        ZStack {
+            // Thumbnail background
             if let thumbnailUrl = item.thumbnailUrl, let url = URL(string: thumbnailUrl) {
-                AsyncImage(url: url) { image in
-                    image
-                        .resizable()
-                        .aspectRatio(contentMode: .fill)
-                } placeholder: {
-                    Color.black
+                AsyncImage(url: url) { phase in
+                    if case .success(let image) = phase {
+                        image
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                    } else {
+                        Color.black
+                    }
                 }
+            } else {
+                Color.black
             }
 
             VStack(spacing: 12) {
-                Image(systemName: "play.circle.fill")
-                    .font(.system(size: 80))
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .tint(.white)
+                Text("Loading video...")
+                    .font(.caption)
                     .foregroundStyle(.white.opacity(0.7))
-
-                if let title = item.title {
-                    Text(title)
-                        .font(.pulsyncTitle2)
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                }
-
-                if let duration = item.durationSeconds {
-                    Text(formatDuration(duration))
-                        .font(.pulsyncCaption)
-                        .foregroundStyle(.gray)
-                }
             }
         }
     }
 
-    private var errorView: some View {
+    private var noMediaView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "video.slash")
+                .font(.system(size: 60))
+                .foregroundStyle(.gray)
+            Text("No video URL")
+                .font(.headline)
+                .foregroundStyle(.white)
+        }
+    }
+
+    private func errorView(message: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: "exclamationmark.triangle")
                 .font(.system(size: 60))
                 .foregroundStyle(.orange)
 
             Text("Video failed to load")
-                .font(.pulsyncBody)
+                .font(.headline)
                 .foregroundStyle(.white)
 
+            Text(message)
+                .font(.caption)
+                .foregroundStyle(.gray)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
             Button("Retry") {
-                if let mediaUrl = item.mediaUrl, let url = URL(string: mediaUrl) {
-                    hasError = false
-                    isLoading = true
-                    Task {
-                        await loadVideo(from: url)
-                    }
+                if let mediaUrl = item.mediaUrl {
+                    viewModel.load(urlString: mediaUrl)
                 }
             }
-            .buttonStyle(.bordered)
+            .buttonStyle(.borderedProminent)
+        }
+    }
+}
+
+// ViewModel to manage video player state
+@MainActor
+class VideoPlayerViewModel: ObservableObject {
+    enum State: Equatable {
+        case idle
+        case loading
+        case ready
+        case failed(String)
+    }
+
+    @Published var state: State = .idle
+    @Published var player: AVPlayer?
+
+    private var cancellables = Set<AnyCancellable>()
+    private var statusObserver: NSKeyValueObservation?
+    private var loopObserver: Any?
+
+    func load(urlString: String) {
+        guard let url = URL(string: urlString) else {
+            state = .failed("Invalid URL")
+            return
+        }
+
+        state = .loading
+
+        // Clean up previous player
+        cleanup()
+
+        // Create new player
+        let playerItem = AVPlayerItem(url: url)
+        let newPlayer = AVPlayer(playerItem: playerItem)
+        newPlayer.isMuted = false
+
+        // Observe status using KVO
+        statusObserver = playerItem.observe(\.status, options: [.new]) { [weak self] item, _ in
+            DispatchQueue.main.async {
+                switch item.status {
+                case .readyToPlay:
+                    self?.player = newPlayer
+                    self?.state = .ready
+                    newPlayer.play()
+                case .failed:
+                    let errorMsg = item.error?.localizedDescription ?? "Unknown playback error"
+                    self?.state = .failed(errorMsg)
+                case .unknown:
+                    break
+                @unknown default:
+                    break
+                }
+            }
+        }
+
+        // Loop when video ends
+        loopObserver = NotificationCenter.default.addObserver(
+            forName: .AVPlayerItemDidPlayToEndTime,
+            object: playerItem,
+            queue: .main
+        ) { [weak newPlayer] _ in
+            newPlayer?.seek(to: .zero)
+            newPlayer?.play()
+        }
+
+        // Timeout after 15 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 15) { [weak self] in
+            if self?.state == .loading {
+                self?.state = .failed("Timeout - video took too long to load")
+            }
         }
     }
 
-    private func loadVideo(from url: URL) async {
-        let asset = AVAsset(url: url)
+    private func cleanup() {
+        statusObserver?.invalidate()
+        statusObserver = nil
 
-        do {
-            let isPlayable = try await asset.load(.isPlayable)
-            if isPlayable {
-                await MainActor.run {
-                    let playerItem = AVPlayerItem(asset: asset)
-                    self.player = AVPlayer(playerItem: playerItem)
-                    self.isLoading = false
-
-                    // Loop video
-                    NotificationCenter.default.addObserver(
-                        forName: .AVPlayerItemDidPlayToEndTime,
-                        object: playerItem,
-                        queue: .main
-                    ) { _ in
-                        self.player?.seek(to: .zero)
-                        self.player?.play()
-                    }
-                }
-            } else {
-                await MainActor.run {
-                    self.hasError = true
-                    self.isLoading = false
-                }
-            }
-        } catch {
-            await MainActor.run {
-                self.hasError = true
-                self.isLoading = false
-            }
+        if let observer = loopObserver {
+            NotificationCenter.default.removeObserver(observer)
+            loopObserver = nil
         }
+
+        player?.pause()
+        player = nil
     }
 
-    private func formatDuration(_ seconds: Int) -> String {
-        let mins = seconds / 60
-        let secs = seconds % 60
-        return String(format: "%d:%02d", mins, secs)
-    }
 }
