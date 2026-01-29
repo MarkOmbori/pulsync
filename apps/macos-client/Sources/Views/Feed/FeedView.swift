@@ -2,7 +2,6 @@ import SwiftUI
 
 struct FeedView: View {
     @State private var feedItems: [ContentFeedItem] = []
-    @State private var currentIndex = 0
     @State private var isLoading = false
     @State private var error: String?
     @State private var nextCursor: String?
@@ -25,92 +24,13 @@ struct FeedView: View {
                 if isLoading && feedItems.isEmpty {
                     ProgressView()
                         .scaleEffect(1.5)
+                        .tint(.white)
                 } else if let error = error, feedItems.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "exclamationmark.triangle")
-                            .font(.largeTitle)
-                            .foregroundStyle(.orange)
-                        Text(error)
-                            .foregroundStyle(.secondary)
-                        Button("Retry") {
-                            Task { await loadFeed() }
-                        }
-                    }
+                    errorView(message: error)
                 } else if feedItems.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "tray")
-                            .font(.largeTitle)
-                            .foregroundStyle(.gray)
-                        Text("No content yet")
-                            .foregroundStyle(.secondary)
-                    }
+                    emptyView
                 } else {
-                    // Vertical scroll with snap-to-item behavior
-                    ScrollViewReader { proxy in
-                        ScrollView(.vertical, showsIndicators: false) {
-                            LazyVStack(spacing: 0) {
-                                ForEach(Array(feedItems.enumerated()), id: \.element.id) { index, item in
-                                    ContentCard(item: item)
-                                        .frame(width: geometry.size.width, height: geometry.size.height)
-                                        .id(index)
-                                        .onAppear {
-                                            currentIndex = index
-                                            recordView(for: item)
-
-                                            // Load more when near end
-                                            if index >= feedItems.count - 3 && hasMore && !isLoading {
-                                                Task { await loadMoreFeed() }
-                                            }
-                                        }
-                                }
-                            }
-                        }
-                        .scrollTargetLayout()
-                        .scrollPosition(id: Binding(
-                            get: { currentIndex },
-                            set: { if let newValue = $0 { currentIndex = newValue } }
-                        ))
-                        .onKeyPress(.downArrow) {
-                            navigateToNext(proxy: proxy)
-                            return .handled
-                        }
-                        .onKeyPress(.upArrow) {
-                            navigateToPrevious(proxy: proxy)
-                            return .handled
-                        }
-                        .onKeyPress(.space) {
-                            navigateToNext(proxy: proxy)
-                            return .handled
-                        }
-                    }
-
-                    // Navigation hints
-                    VStack {
-                        Spacer()
-                        HStack {
-                            Spacer()
-                            VStack(spacing: 4) {
-                                if currentIndex > 0 {
-                                    Image(systemName: "chevron.up")
-                                        .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.5))
-                                }
-                                Text("\(currentIndex + 1)/\(feedItems.count)")
-                                    .font(.caption2)
-                                    .foregroundStyle(.white.opacity(0.5))
-                                if currentIndex < feedItems.count - 1 {
-                                    Image(systemName: "chevron.down")
-                                        .font(.caption)
-                                        .foregroundStyle(.white.opacity(0.5))
-                                }
-                            }
-                            .padding(8)
-                            .background(.black.opacity(0.3))
-                            .clipShape(Capsule())
-                            .padding(.trailing, 8)
-                            .padding(.bottom, 80)
-                        }
-                    }
+                    feedContent(geometry: geometry)
                 }
             }
         }
@@ -119,23 +39,57 @@ struct FeedView: View {
         }
     }
 
-    private func navigateToNext(proxy: ScrollViewProxy) {
-        if currentIndex < feedItems.count - 1 {
-            currentIndex += 1
-            withAnimation(.easeInOut(duration: 0.3)) {
-                proxy.scrollTo(currentIndex, anchor: .top)
+    // MARK: - Feed Content
+
+    private func feedContent(geometry: GeometryProxy) -> some View {
+        ScrollView(.vertical, showsIndicators: true) {
+            LazyVStack(spacing: 0) {
+                ForEach(Array(feedItems.enumerated()), id: \.element.id) { index, item in
+                    ContentCard(item: item)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .onAppear {
+                            recordView(for: item)
+
+                            // Load more when near end
+                            if index >= feedItems.count - 3 && hasMore && !isLoading {
+                                Task { await loadMoreFeed() }
+                            }
+                        }
+                }
             }
         }
     }
 
-    private func navigateToPrevious(proxy: ScrollViewProxy) {
-        if currentIndex > 0 {
-            currentIndex -= 1
-            withAnimation(.easeInOut(duration: 0.3)) {
-                proxy.scrollTo(currentIndex, anchor: .top)
-            }
+    // MARK: - Empty & Error Views
+
+    private var emptyView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "tray")
+                .font(.system(size: 50))
+                .foregroundStyle(.gray)
+            Text("No content yet")
+                .font(.headline)
+                .foregroundStyle(.secondary)
         }
     }
+
+    private func errorView(message: String) -> some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.system(size: 50))
+                .foregroundStyle(.orange)
+            Text(message)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+            Button("Retry") {
+                Task { await loadFeed() }
+            }
+            .buttonStyle(.borderedProminent)
+        }
+        .padding()
+    }
+
+    // MARK: - Data Loading
 
     private func loadFeed() async {
         isLoading = true
