@@ -68,7 +68,7 @@ struct GlobalAIChatBar: View {
                 .lineLimit(1...6)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 10)
-                .background(PulsyncTheme.surface)
+                .background(.black)
                 .clipShape(RoundedRectangle(cornerRadius: PulsyncRadius.xl))
                 .overlay(
                     RoundedRectangle(cornerRadius: PulsyncRadius.xl)
