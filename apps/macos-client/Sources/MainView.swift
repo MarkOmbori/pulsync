@@ -12,6 +12,7 @@ struct MainView: View {
         case discover = "Discover"
         case define = "Define"
         case deliver = "Deliver"
+        case chat = "Chat"
     }
 
     var body: some View {
@@ -61,11 +62,13 @@ struct MainView: View {
         case .home:
             FeedTabView()
         case .discover:
-            DiscoverView()
+            DiscoverFeedView()
         case .define:
             DefineView()
         case .deliver:
             DeliverView()
+        case .chat:
+            CompanyChatView()
         }
     }
 
@@ -114,6 +117,7 @@ struct MainView: View {
         case .discover: return selectedTab == tab ? "magnifyingglass" : "magnifyingglass"
         case .define: return selectedTab == tab ? "checkmark.circle.fill" : "checkmark.circle"
         case .deliver: return selectedTab == tab ? "chart.bar.fill" : "chart.bar"
+        case .chat: return selectedTab == tab ? "bubble.left.and.bubble.right.fill" : "bubble.left.and.bubble.right"
         }
     }
 
