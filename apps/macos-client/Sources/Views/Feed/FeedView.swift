@@ -6,6 +6,7 @@ struct FeedView: View {
     @State private var error: String?
     @State private var nextCursor: String?
     @State private var hasMore = true
+    @State private var currentVideoID: UUID?
 
     let feedType: FeedType
 
@@ -42,11 +43,12 @@ struct FeedView: View {
     // MARK: - Feed Content
 
     private func feedContent(geometry: GeometryProxy) -> some View {
-        ScrollView(.vertical, showsIndicators: true) {
+        ScrollView(.vertical, showsIndicators: false) {
             LazyVStack(spacing: 0) {
                 ForEach(Array(feedItems.enumerated()), id: \.element.id) { index, item in
-                    ContentCard(item: item)
-                        .frame(width: geometry.size.width, height: geometry.size.height)
+                    ContentCard(item: item, isCurrentlyVisible: currentVideoID == item.id)
+                        .containerRelativeFrame(.vertical, count: 1, span: 1, spacing: 0)
+                        .id(item.id)
                         .onAppear {
                             recordView(for: item)
 
@@ -57,7 +59,10 @@ struct FeedView: View {
                         }
                 }
             }
+            .scrollTargetLayout()
         }
+        .scrollPosition(id: $currentVideoID)
+        .scrollTargetBehavior(.paging)
     }
 
     // MARK: - Empty & Error Views

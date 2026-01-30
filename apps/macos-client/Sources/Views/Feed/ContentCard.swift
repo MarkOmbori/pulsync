@@ -4,6 +4,7 @@ import AppKit
 struct ContentCard: View {
     @Environment(\.layoutEnvironment) private var layout
     let item: ContentFeedItem
+    var isCurrentlyVisible: Bool = false
 
     @State private var isLiked: Bool
     @State private var isBookmarked: Bool
@@ -11,8 +12,9 @@ struct ContentCard: View {
     @State private var showComments = false
     @State private var showLikeAnimation = false
 
-    init(item: ContentFeedItem) {
+    init(item: ContentFeedItem, isCurrentlyVisible: Bool = false) {
         self.item = item
+        self.isCurrentlyVisible = isCurrentlyVisible
         _isLiked = State(initialValue: item.isLiked)
         _isBookmarked = State(initialValue: item.isBookmarked)
         _likeCount = State(initialValue: item.likeCount)
@@ -90,7 +92,7 @@ struct ContentCard: View {
         case .text:
             TextContentView(item: item)
         case .video:
-            VideoContentView(item: item)
+            VideoContentView(item: item, isPlaying: isCurrentlyVisible)
         case .audio:
             AudioContentView(item: item)
         }

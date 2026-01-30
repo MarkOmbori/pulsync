@@ -1,5 +1,6 @@
 import SwiftUI
 import AVKit
+import AppKit
 import Combine
 
 // Container view that forwards all scroll events to the parent scroll view
@@ -60,6 +61,7 @@ struct NativeVideoPlayer: NSViewRepresentable {
 
 struct VideoContentView: View {
     let item: ContentFeedItem
+    var isPlaying: Bool = false
 
     @StateObject private var viewModel = VideoPlayerViewModel()
 
@@ -179,11 +181,27 @@ struct VideoContentView: View {
                             player.play()
                         }
                     }
-                    .onAppear {
-                        player.play()
+                    .onChange(of: isPlaying) { _, shouldPlay in
+                        if shouldPlay {
+                            player.play()
+                        } else {
+                            player.pause()
+                        }
+                    }
+                    .onReceive(NotificationCenter.default.publisher(
+                        for: NSApplication.didResignActiveNotification
+                    )) { _ in
+                        player.pause()
+                    }
+                    .onReceive(NotificationCenter.default.publisher(
+                        for: NSApplication.didBecomeActiveNotification
+                    )) { _ in
+                        if isPlaying {
+                            player.play()
+                        }
                     }
                     .onDisappear {
-                        player.pause()
+                        viewModel.cleanup()
                     }
             }
 
@@ -263,7 +281,7 @@ class VideoPlayerViewModel: ObservableObject {
         }
     }
 
-    private func cleanup() {
+    func cleanup() {
         statusObserver?.invalidate()
         statusObserver = nil
 
