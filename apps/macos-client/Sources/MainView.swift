@@ -6,6 +6,7 @@ struct MainView: View {
     @State private var isInitializing = true
     @State private var selectedTab: BottomTab = .home
     @State private var apiOnline = false
+    @State private var globalAIChatState = GlobalAIChatState()
 
     enum BottomTab: String, CaseIterable {
         case home = "Home"
@@ -50,7 +51,14 @@ struct MainView: View {
 
                 // Bottom Navigation Bar
                 bottomNavigationBar
+
+                // Global AI Chat Bar (at very bottom)
+                GlobalAIChatBar()
             }
+        }
+        .environment(\.globalAIChat, globalAIChatState)
+        .task {
+            await globalAIChatState.initialize()
         }
     }
 

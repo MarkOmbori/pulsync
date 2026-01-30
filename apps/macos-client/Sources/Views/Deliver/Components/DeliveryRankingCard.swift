@@ -32,7 +32,7 @@ struct DeliveryRankingCard: View {
         VStack(spacing: 8) {
             // Header
             HStack {
-                Text("Delivery Ranking")
+                Text("Set Goals")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(MiroColors.textMuted)
                 Spacer()
@@ -55,13 +55,19 @@ struct DeliveryRankingCard: View {
             }
 
             // Ranking Display
-            HStack(alignment: .firstTextBaseline, spacing: 2) {
-                Text("\(ranking.rank)")
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundStyle(.white)
+            VStack(spacing: 4) {
+                HStack(alignment: .firstTextBaseline, spacing: 2) {
+                    Text("\(ranking.rank)")
+                        .font(.system(size: 28, weight: .bold, design: .rounded))
+                        .foregroundStyle(.white)
 
-                Text("of \(formatNumber(ranking.totalUsers))")
-                    .font(.system(size: 12, weight: .medium))
+                    Text("of \(formatFullNumber(ranking.totalUsers))")
+                        .font(.system(size: 12, weight: .medium))
+                        .foregroundStyle(MiroColors.textMuted)
+                }
+
+                Text("Mironeers")
+                    .font(.system(size: 10, weight: .medium))
                     .foregroundStyle(MiroColors.textMuted)
             }
 
@@ -73,10 +79,9 @@ struct DeliveryRankingCard: View {
         .clipShape(RoundedRectangle(cornerRadius: MiroRadius.card))
     }
 
-    private func formatNumber(_ num: Int) -> String {
-        if num >= 1000 {
-            return String(format: "%.1fK", Double(num) / 1000)
-        }
-        return "\(num)"
+    private func formatFullNumber(_ num: Int) -> String {
+        let formatter = NumberFormatter()
+        formatter.numberStyle = .decimal
+        return formatter.string(from: NSNumber(value: num)) ?? "\(num)"
     }
 }

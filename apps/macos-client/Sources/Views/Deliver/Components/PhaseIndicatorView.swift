@@ -56,16 +56,27 @@ struct PhasePill: View {
     }
 
     var body: some View {
-        Text(phase.displayName)
-            .font(.system(size: 8, weight: isCurrent ? .semibold : .medium))
-            .foregroundStyle(isCurrent ? .white : (isPast ? phaseColor : MiroColors.textMuted))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 3)
-            .background(
-                isCurrent
-                    ? phaseColor
-                    : (isPast ? phaseColor.opacity(0.2) : Color.white.opacity(0.05))
-            )
-            .clipShape(Capsule())
+        HStack(spacing: 2) {
+            if isPast {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 6, weight: .bold))
+                    .foregroundStyle(phaseColor)
+            }
+            Text(phase.displayName)
+                .font(.system(size: 8, weight: isCurrent ? .semibold : .medium))
+                .foregroundStyle(isCurrent ? .white : (isPast ? phaseColor : MiroColors.textMuted))
+        }
+        .padding(.horizontal, 6)
+        .padding(.vertical, 3)
+        .background(
+            isCurrent
+                ? phaseColor
+                : (isPast ? phaseColor.opacity(0.25) : Color.white.opacity(0.05))
+        )
+        .overlay(
+            Capsule()
+                .stroke(isPast ? phaseColor.opacity(0.5) : Color.clear, lineWidth: 1)
+        )
+        .clipShape(Capsule())
     }
 }
