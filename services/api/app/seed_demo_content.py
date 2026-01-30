@@ -58,21 +58,18 @@ DEMO_USERS = [
     },
 ]
 
-# YouTube Shorts URLs for reliable video content
+# YouTube video URLs for reliable video content
 # AVPlayer cannot play YouTube directly, but the Swift client uses WKWebView for YouTube
-# These are real YouTube Shorts video IDs from professional channels
+# These are verified working YouTube video IDs that are embeddable
 #
-# To find more shorts:
-# 1. Go to https://www.youtube.com/@MiroHQ/shorts or any channel's /shorts page
-# 2. Click on a short, the URL will be youtube.com/shorts/VIDEO_ID
-# 3. Copy the 11-character VIDEO_ID and add it below
+# Using regular watch URLs (not /shorts/) - the embed API works the same for both
 #
 TEST_VIDEOS = [
-    # Professional/business productivity shorts (actual working video IDs)
-    "https://www.youtube.com/shorts/r_mI-_Wb-9Y",  # Example short
-    "https://www.youtube.com/shorts/26kN6XDrnZA",  # Example short
-    "https://www.youtube.com/shorts/dQw4w9WgXcQ",  # Popular video (works as short embed)
-    "https://www.youtube.com/shorts/jNQXAC9IVRw",  # First YouTube video ("Me at the zoo")
+    # Verified working YouTube videos (embeddable)
+    "https://www.youtube.com/watch?v=dQw4w9WgXcQ",  # Rick Astley - Never Gonna Give You Up
+    "https://www.youtube.com/watch?v=jNQXAC9IVRw",  # Me at the zoo (first YouTube video)
+    "https://www.youtube.com/watch?v=9bZkp7q19f0",  # PSY - Gangnam Style
+    "https://www.youtube.com/watch?v=kJQP7kiw5Fk",  # Luis Fonsi - Despacito
 ]
 
 TEST_THUMBNAILS = [
