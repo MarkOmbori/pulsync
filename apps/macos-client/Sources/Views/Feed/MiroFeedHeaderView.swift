@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Complete Miro-style feed header with branding, tabs, and clean layout
+/// Clean feed header with logo on left, tabs in center
 struct MiroFeedHeaderView: View {
     @Environment(\.layoutEnvironment) private var layout
     @Binding var selectedTab: FeedTabView.FeedTab
@@ -11,7 +11,9 @@ struct MiroFeedHeaderView: View {
 
     var body: some View {
         HStack {
-            // Left spacer for balance
+            // Left: Pulsync branding with Miro logo
+            brandingView
+
             Spacer()
 
             // Center: Tab Switcher
@@ -19,8 +21,9 @@ struct MiroFeedHeaderView: View {
 
             Spacer()
 
-            // Right: Miro + Pulsync branding
+            // Right: Empty spacer for balance (same width as branding)
             brandingView
+                .opacity(0)
         }
         .padding(.horizontal, horizontalPadding)
         .padding(.top, topPadding)
@@ -30,9 +33,9 @@ struct MiroFeedHeaderView: View {
     private var brandingView: some View {
         switch sizeCategory {
         case .small:
-            MiroBrandingCompact()
+            PulsyncBrandingCompact()
         case .medium, .large:
-            MiroBrandingView()
+            PulsyncBrandingView()
         }
     }
 

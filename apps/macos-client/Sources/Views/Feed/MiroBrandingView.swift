@@ -1,50 +1,85 @@
 import SwiftUI
 
-/// Miro-style branding with "miro" logotype followed by "pulsync"
-struct MiroBrandingView: View {
+/// Miro logo icon - yellow rounded square with stylized M strokes
+struct MiroLogoIcon: View {
+    let size: CGFloat
+
     var body: some View {
-        HStack(spacing: 2) {
-            // Miro logotype style
-            Text("miro")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(MiroColors.miroYellow)
+        ZStack {
+            // Yellow rounded square background
+            RoundedRectangle(cornerRadius: size * 0.22)
+                .fill(MiroColors.miroYellow)
+                .frame(width: size, height: size)
 
-            // Separator dot
-            Circle()
-                .fill(MiroColors.textMuted.opacity(0.5))
-                .frame(width: 4, height: 4)
-                .padding(.horizontal, 4)
+            // Three diagonal strokes forming stylized "M"
+            Canvas { context, canvasSize in
+                let strokeWidth = size * 0.12
+                let color = Color(hex: "050038") // Dark navy from Miro logo
 
-            // Pulsync in same style
-            Text("pulsync")
+                // Calculate positions for three strokes
+                let padding = size * 0.22
+                let strokeSpacing = (canvasSize.width - padding * 2) / 3.5
+
+                for i in 0..<3 {
+                    let xOffset = padding + CGFloat(i) * strokeSpacing
+
+                    var path = Path()
+                    // Stroke goes from bottom-left to top-right
+                    path.move(to: CGPoint(
+                        x: xOffset,
+                        y: canvasSize.height - padding
+                    ))
+                    path.addLine(to: CGPoint(
+                        x: xOffset + strokeSpacing * 0.7,
+                        y: padding
+                    ))
+
+                    context.stroke(
+                        path,
+                        with: .color(color),
+                        style: StrokeStyle(
+                            lineWidth: strokeWidth,
+                            lineCap: .round
+                        )
+                    )
+                }
+            }
+            .frame(width: size, height: size)
+        }
+    }
+}
+
+/// Pulsync branding with Miro logo icon + "Pulsync" text
+struct PulsyncBrandingView: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            // Miro-style logo icon
+            MiroLogoIcon(size: 28)
+
+            // Pulsync text
+            Text("Pulsync")
                 .font(.system(size: 18, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(.ultraThinMaterial)
-        )
     }
 }
 
 /// Compact version for smaller screens
-struct MiroBrandingCompact: View {
+struct PulsyncBrandingCompact: View {
     var body: some View {
-        HStack(spacing: 3) {
-            Text("m")
-                .font(.system(size: 16, weight: .black, design: .rounded))
-                .foregroundStyle(MiroColors.miroYellow)
-            Text("p")
-                .font(.system(size: 16, weight: .black, design: .rounded))
+        HStack(spacing: 6) {
+            MiroLogoIcon(size: 24)
+
+            Text("Pulsync")
+                .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
         }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(
-            Capsule()
-                .fill(.ultraThinMaterial)
-        )
     }
 }
+
+// Keep old names for compatibility but mark as deprecated
+@available(*, deprecated, renamed: "PulsyncBrandingView")
+typealias MiroBrandingView = PulsyncBrandingView
+
+@available(*, deprecated, renamed: "PulsyncBrandingCompact")
+typealias MiroBrandingCompact = PulsyncBrandingCompact

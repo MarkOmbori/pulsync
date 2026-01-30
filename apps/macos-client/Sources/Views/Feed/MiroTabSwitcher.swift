@@ -1,19 +1,19 @@
 import SwiftUI
 
-/// Miro-style compact pill tab switcher for "For You" / "Following"
+/// Integrated tab switcher with subtle selection indicator
 struct MiroTabSwitcher: View {
     @Binding var selectedTab: FeedTabView.FeedTab
 
     var body: some View {
-        HStack(spacing: 0) {
+        HStack(spacing: 4) {
             ForEach(FeedTabView.FeedTab.allCases, id: \.self) { tab in
                 tabButton(for: tab)
             }
         }
-        .padding(3)
+        .padding(4)
         .background(
             Capsule()
-                .fill(.ultraThinMaterial)
+                .fill(Color.white.opacity(0.1))
         )
     }
 
@@ -22,15 +22,15 @@ struct MiroTabSwitcher: View {
         let isSelected = selectedTab == tab
 
         Button {
-            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+            withAnimation(.spring(response: 0.25, dampingFraction: 0.8)) {
                 selectedTab = tab
             }
         } label: {
             Text(tab.shortLabel)
-                .font(.system(size: 13, weight: isSelected ? .bold : .medium, design: .rounded))
-                .foregroundStyle(isSelected ? MiroColors.textDark : .white.opacity(0.7))
-                .padding(.horizontal, 14)
-                .padding(.vertical, 6)
+                .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
+                .foregroundStyle(isSelected ? MiroColors.textDark : .white.opacity(0.6))
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
                 .background(
                     Capsule()
                         .fill(isSelected ? MiroColors.miroYellow : Color.clear)
