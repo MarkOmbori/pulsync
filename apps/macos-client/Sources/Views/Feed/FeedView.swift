@@ -106,7 +106,20 @@ struct FeedView: View {
                 response = try await APIClient.shared.getDiscoverFeed()
             }
 
-            feedItems = response.items
+            // Filter out video/audio items without valid media URLs
+            feedItems = response.items.filter { item in
+                switch item.contentType {
+                case .video, .audio:
+                    guard let mediaUrl = item.mediaUrl,
+                          !mediaUrl.isEmpty,
+                          URL(string: mediaUrl) != nil else {
+                        return false
+                    }
+                    return true
+                case .text:
+                    return true
+                }
+            }
             nextCursor = response.nextCursor
             hasMore = response.hasMore
         } catch {
@@ -131,7 +144,21 @@ struct FeedView: View {
                 response = try await APIClient.shared.getDiscoverFeed(cursor: cursor)
             }
 
-            feedItems.append(contentsOf: response.items)
+            // Filter out video/audio items without valid media URLs
+            let validItems = response.items.filter { item in
+                switch item.contentType {
+                case .video, .audio:
+                    guard let mediaUrl = item.mediaUrl,
+                          !mediaUrl.isEmpty,
+                          URL(string: mediaUrl) != nil else {
+                        return false
+                    }
+                    return true
+                case .text:
+                    return true
+                }
+            }
+            feedItems.append(contentsOf: validItems)
             nextCursor = response.nextCursor
             hasMore = response.hasMore
         } catch {

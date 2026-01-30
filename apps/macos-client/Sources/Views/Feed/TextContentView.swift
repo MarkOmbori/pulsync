@@ -5,20 +5,6 @@ struct TextContentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
-            if item.isCompanyImportant {
-                HStack(spacing: 6) {
-                    Image(systemName: "star.fill")
-                        .foregroundStyle(.yellow)
-                    Text("Company Important")
-                        .font(.caption.bold())
-                        .foregroundStyle(.yellow)
-                }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-                .background(.yellow.opacity(0.2))
-                .clipShape(Capsule())
-            }
-
             if let title = item.title {
                 Text(title)
                     .font(.system(size: 32, weight: .bold))

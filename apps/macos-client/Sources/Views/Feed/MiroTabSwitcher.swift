@@ -1,20 +1,15 @@
 import SwiftUI
 
-/// Integrated tab switcher with subtle selection indicator
+/// Inline tab switcher with underline indicator (TikTok/Instagram style)
 struct MiroTabSwitcher: View {
     @Binding var selectedTab: FeedTabView.FeedTab
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 24) {
             ForEach(FeedTabView.FeedTab.allCases, id: \.self) { tab in
                 tabButton(for: tab)
             }
         }
-        .padding(4)
-        .background(
-            Capsule()
-                .fill(Color.white.opacity(0.1))
-        )
     }
 
     @ViewBuilder
@@ -26,15 +21,18 @@ struct MiroTabSwitcher: View {
                 selectedTab = tab
             }
         } label: {
-            Text(tab.shortLabel)
-                .font(.system(size: 13, weight: isSelected ? .semibold : .medium, design: .rounded))
-                .foregroundStyle(isSelected ? MiroColors.textDark : .white.opacity(0.6))
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-                .background(
-                    Capsule()
-                        .fill(isSelected ? MiroColors.miroYellow : Color.clear)
-                )
+            VStack(spacing: 4) {
+                Text(tab.shortLabel)
+                    .font(.system(size: 14, weight: isSelected ? .semibold : .medium, design: .rounded))
+                    .foregroundStyle(isSelected ? .white : .white.opacity(0.5))
+
+                // Underline indicator
+                Rectangle()
+                    .fill(isSelected ? .white : Color.clear)
+                    .frame(height: 2)
+                    .cornerRadius(1)
+            }
+            .padding(.horizontal, 4)
         }
         .buttonStyle(.plain)
     }
