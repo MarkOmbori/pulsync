@@ -76,7 +76,8 @@ struct MainView: View {
         case .deliver:
             DeliverView()
         case .chat:
-            CompanyChatView()
+            // Use SlackChatView for Slack integration, fallback to CompanyChatView
+            SlackChatView()
         }
     }
 
