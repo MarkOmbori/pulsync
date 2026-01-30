@@ -68,37 +68,12 @@ struct VideoContentView: View {
             PulsyncTheme.background
 
             if let mediaUrl = item.mediaUrl {
-                switch viewModel.state {
-                case .idle:
-                    Color.black
-                        .onAppear {
-                            viewModel.load(urlString: mediaUrl)
-                        }
-
-                case .loading:
-                    loadingView
-
-                case .ready:
-                    if let player = viewModel.player {
-                        NativeVideoPlayer(player: player)
-                            .onTapGesture {
-                                // Toggle play/pause on tap
-                                if player.timeControlStatus == .playing {
-                                    player.pause()
-                                } else {
-                                    player.play()
-                                }
-                            }
-                            .onAppear {
-                                player.play()
-                            }
-                            .onDisappear {
-                                player.pause()
-                            }
-                    }
-
-                case .failed(let error):
-                    errorView(message: error)
+                // Check if this is a YouTube URL - use WKWebView for YouTube
+                if isYouTubeUrl(mediaUrl), let videoId = extractYouTubeVideoId(from: mediaUrl) {
+                    YouTubeWebView(videoId: videoId)
+                } else {
+                    // Native AVPlayer for self-hosted videos
+                    nativeVideoContent(mediaUrl: mediaUrl)
                 }
             } else {
                 noMediaView
@@ -178,6 +153,42 @@ struct VideoContentView: View {
                 }
             }
             .buttonStyle(.borderedProminent)
+        }
+    }
+
+    @ViewBuilder
+    private func nativeVideoContent(mediaUrl: String) -> some View {
+        switch viewModel.state {
+        case .idle:
+            Color.black
+                .onAppear {
+                    viewModel.load(urlString: mediaUrl)
+                }
+
+        case .loading:
+            loadingView
+
+        case .ready:
+            if let player = viewModel.player {
+                NativeVideoPlayer(player: player)
+                    .onTapGesture {
+                        // Toggle play/pause on tap
+                        if player.timeControlStatus == .playing {
+                            player.pause()
+                        } else {
+                            player.play()
+                        }
+                    }
+                    .onAppear {
+                        player.play()
+                    }
+                    .onDisappear {
+                        player.pause()
+                    }
+            }
+
+        case .failed(let error):
+            errorView(message: error)
         }
     }
 }

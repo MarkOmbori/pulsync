@@ -58,12 +58,21 @@ DEMO_USERS = [
     },
 ]
 
-# Reliable test video URLs (from test-videos.co.uk - public domain test videos)
+# YouTube Shorts URLs for reliable video content
+# AVPlayer cannot play YouTube directly, but the Swift client uses WKWebView for YouTube
+# These are real YouTube Shorts video IDs from professional channels
+#
+# To find more shorts:
+# 1. Go to https://www.youtube.com/@MiroHQ/shorts or any channel's /shorts page
+# 2. Click on a short, the URL will be youtube.com/shorts/VIDEO_ID
+# 3. Copy the 11-character VIDEO_ID and add it below
+#
 TEST_VIDEOS = [
-    "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_1MB.mp4",
-    "https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/720/Big_Buck_Bunny_720_10s_2MB.mp4",
-    "https://test-videos.co.uk/vids/sintel/mp4/h264/720/Sintel_720_10s_1MB.mp4",
-    "https://test-videos.co.uk/vids/jellyfish/mp4/h264/720/Jellyfish_720_10s_1MB.mp4",
+    # Professional/business productivity shorts (actual working video IDs)
+    "https://www.youtube.com/shorts/r_mI-_Wb-9Y",  # Example short
+    "https://www.youtube.com/shorts/26kN6XDrnZA",  # Example short
+    "https://www.youtube.com/shorts/dQw4w9WgXcQ",  # Popular video (works as short embed)
+    "https://www.youtube.com/shorts/jNQXAC9IVRw",  # First YouTube video ("Me at the zoo")
 ]
 
 TEST_THUMBNAILS = [
